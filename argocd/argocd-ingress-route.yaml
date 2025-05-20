@@ -1,24 +1,29 @@
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
+kind: Ingress
+apiVersion: networking.k8s.io/v1
 metadata:
   name: argocd-server
   namespace: argocd
   annotations:
-    kubernetes.io/ingress.class: traefik
+    # spec.ingressClassName: traefik # This was an incorrect placement for ingressClassName
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/service.serversscheme: h2c # Enable H2C for gRPC to the backend
 spec:
-  entryPoints:
-    - websecure
-  routes:
-    - match: Host(`kube.local`) && (PathPrefix(`/argocd-server`))
-      kind: Rule
-      services:
-      - name: argocd-server
-        port: 80
-        namespace: argocd
-    - kind: Rule
-      match: Host(`kube.local`) && (PathPrefix(`/argocd-server`)) && Headers(`Content-Type`, `application/grpc`)
-      services:
-      - name: argocd-server
-        port: 80
-        scheme: h2c
+  ingressClassName: traefik # Correct field for specifying the Ingress controller
+  rules:
+    - host: kube.local
+      http:
+        paths:
+          - path: /argocd-server
+            pathType: Prefix
+            backend:
+              service:
+                name: argocd-server # Service in the same namespace as the Ingress (argocd)
+                port:
+                  number: 80 # Argo CD service HTTP port (when server.insecure: "true")
   tls:
+    - hosts:
+        - kube.local
+      secretName: argocd-server-tls # Ensure this TLS secret exists in the 'argocd' namespace
+                                    # containing the certificate for kube.local
+                                    # If you do not want TLS termination at Ingress, remove this 'tls' section
+                                    # and adjust Traefik entrypoint annotation if necessary (e.g., to 'web').
