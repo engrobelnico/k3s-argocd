@@ -5,6 +5,7 @@ metadata:
 data:
   policy.default: role:admin
   server.insecure: "true"
+  server.metrics.enabled: "true"
   reposerver.disable.tls: "true"
   dexserver.disable.tls: "true"
   server.repo.server.plaintext: "true"

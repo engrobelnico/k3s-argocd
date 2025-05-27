@@ -23,7 +23,7 @@ spec:
   tls:
     - hosts:
         - kube.local
-      secretName: argocd-server-tls # Ensure this TLS secret exists in the 'argocd' namespace
+      secretName: k3s-serving # Ensure this TLS secret exists in the 'argocd' namespace
                                     # containing the certificate for kube.local
                                     # If you do not want TLS termination at Ingress, remove this 'tls' section
                                     # and adjust Traefik entrypoint annotation if necessary (e.g., to 'web').
